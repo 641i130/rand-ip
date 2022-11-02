@@ -1,3 +1,4 @@
+/*
 use std::net::Ipv4Addr;
 use rand::seq::IteratorRandom;
 use regex::Regex;
@@ -52,4 +53,34 @@ fn main() {
     println!("Total IP addresses : {:?}",list.len());
     //let mut rng = rand::thread_rng();
     //println!("{}", ip_range.iter().choose(&mut rng).unwrap());
+}
+*/
+use ipnet::Ipv4Net;
+use iprange::IpNet;
+use rand::{
+    self,
+    Rng,
+};
+use std::net::Ipv4Addr;
+
+fn main()
+{
+    let a_net: Ipv4Net = "172.16.0.0/16".parse().unwrap();
+
+    let mut rng = rand::thread_rng();
+
+    let ip: Ipv4Addr = a_net
+        .prefix_bits()
+        .enumerate()
+        .map(|(i, b)| (i as u8, b))
+        .chain(
+            (a_net.prefix_len()..32)
+                .map(|i| (i, rng.gen::<bool>())),
+        )
+        .filter(|(_, b)| *b)
+        .map(|(i, _)| 2_u32.pow((31 - i) as u32))
+        .fold(0_u32, |prev, i| prev + i)
+        .into(); // Courtesy of zwerdlds
+
+    println!("Generated IP: {ip}");
 }
