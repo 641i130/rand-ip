@@ -30,7 +30,6 @@ fn subnet(subnet_mask: &String) -> Result<Vec<Ipv4Addr>,Box<dyn std::error::Erro
     if cidr.len() != 5 {
         return Err("Please use the format '1.1.1.1/8' for example.".into())
     }
-    println!("{:?}",cidr);
 
     let ipnum = (cidr[0] << 24) | (cidr[1] << 16) | (cidr[2] << 8) | (cidr[3]);
     let mask:u32 = 0xffffffff << (32 - cidr[4]);
@@ -39,18 +38,18 @@ fn subnet(subnet_mask: &String) -> Result<Vec<Ipv4Addr>,Box<dyn std::error::Erro
     //let ipstart:Ipv4Addr = Ipv4Addr::from((ipnum & mask).to_be_bytes());
     //let ipend:Ipv4Addr = Ipv4Addr::from((ipnum | (mask ^ 0xffffffff)).to_be_bytes());
     let ipend:u32 = ipnum | (mask ^ 0xffffffff);
-
+    
+    let mut out:Vec<Ipv4Addr> = Vec::new();
     for val in 0..ipend-ipstart {
-        println!("{:?}",Ipv4Addr::from(val.to_be_bytes()));
+        out.push(Ipv4Addr::from((val+ipnum).to_be_bytes()).to_owned());
     }
 
-    println!("Addresses : \n{:?}\n{:?}",ipstart,ipend); 
-
-    return Ok(vec![Ipv4Addr::new(127, 0, 0, 1),Ipv4Addr::new(127, 0, 0, 1),Ipv4Addr::new(127, 0, 0, 1)])
+    return Ok(out)
 }
 
 fn main() {
-    println!("{:?}",subnet(&"172.16.0.0/16".to_string()))
+    let list:Vec<Ipv4Addr> = subnet(&"172.16.0.0/16".to_string()).unwrap();
+    println!("Total IP addresses : {:?}",list.len());
     //let mut rng = rand::thread_rng();
     //println!("{}", ip_range.iter().choose(&mut rng).unwrap());
 }
