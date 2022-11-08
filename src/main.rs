@@ -65,7 +65,7 @@ use std::net::Ipv4Addr;
 
 fn main()
 {
-    let a_net: Ipv4Net = "172.16.0.0/16".parse().unwrap();
+    let a_net: Ipv4Net = "35.111.67.88/30".parse().unwrap();
 
     let mut rng = rand::thread_rng();
 
@@ -82,5 +82,15 @@ fn main()
         .fold(0_u32, |prev, i| prev + i)
         .into(); // Courtesy of zwerdlds
 
-    println!("Generated IP: {ip}");
+    let brd: Ipv4Addr = a_net
+        .prefix_bits()
+        .enumerate()
+        .map(|(i, b)| (i as u8, b))
+        .chain((a_net.prefix_len()..32).map(|i| (i, true)))
+        .filter(|(_, b)| *b)
+        .map(|(i, _)| 2_u32.pow((31 - i) as u32))
+        .fold(0_u32, |prev, i| prev + i)
+        .into(); // Courtesy of zwerdlds (thank you!!!)
+
+    println!("Generated IP: {ip}\nBroadcast: {brd}");
 }
